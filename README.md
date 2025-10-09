@@ -25,8 +25,7 @@ DOCKER_DEST=/var/lib/docker
 mkdir -p ${DOCKER_DEST}/minio/data ${DOCKER_DEST}/minio/certs
 chown -R 1001:1001 ${DOCKER_DEST}/minio/data
 
-
-# Copy and rename the certificate files to the certs directory:
+# Copy and rename the Let's Encrypt certificate files to the certs directory:
 #   fullchain.pem → public.crt
 #   privkey.pem   → private.key
 #   ${DOCKER_DEST}/minio/certs/public.crt
@@ -122,9 +121,9 @@ Depending on the Oracle version and platform, the Oracle MML library may already
 ORACLE_DB_NAME=orcl         <-- Just an example
 ORACLE_BASE=/u01/app/oracle <-- Just an example
 
-OSBWS_LIB_LOCATION=/tmp/osbws_install.jar
-OSBWS_RMAN_CONFIG=${ORACLE_BASE}/admin/${ORACLE_DB_NAME}/osb/osbws${ORACLE_DB_NAME}.ora
-OSBWS_WALLET_DIR=${ORACLE_BASE}/admin/${ORACLE_DB_NAME}/osb/wallet
+OSBWS_LIB_LOCATION=/tmp/osbws_install.jar <-- Just an example
+OSBWS_RMAN_CONFIG=${ORACLE_BASE}/admin/${ORACLE_DB_NAME}/osb/osbws${ORACLE_DB_NAME}.ora <-- Just an example
+OSBWS_WALLET_DIR=${ORACLE_BASE}/admin/${ORACLE_DB_NAME}/osb/wallet <-- Just an example
 
 java -jar ${OSBWS_LIB_LOCATION} \
   -awsEndPoint minio.lan.example.com \
@@ -152,4 +151,15 @@ java -jar ${OSBWS_LIB_LOCATION} \
     Oracle Secure Backup Web Service initialization file /u01/app/oracle/admin/orcl/osb/osbwsorcl.ora created.
     Skipping library download because option -libDir is not specified.
     [oracle@acst:~] $
+```
+
+The file "osbws${ORACLE_DB_NAME}.ora" should look like:
+
+```shell
+OSB_WS_HOST=https://minio.lan.example.com:9000
+OSB_WS_BUCKET=oracle-backups
+# OSB_WS_LOCATION=on-prem
+OSB_WS_VIRTUAL_HOST=FALSE
+_OSB_WS_AUTH_SCHEME=AWS
+OSB_WS_WALLET='location=file:/u01/app/oracle/admin/orcl/osb/wallet CREDENTIAL_ALIAS=minio_aws'
 ```
