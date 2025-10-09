@@ -17,7 +17,7 @@ This repository contains scripts and configuration files for automating Oracle R
 
 Create a certificate with Let's Encrypt for your MinIO installation ( [How It Works](https://letsencrypt.org/how-it-works/) ). Example: minio.lan.example.com.
 
-Create the docker MinIO container:
+## MinIO docker container setup
 
 ```shell
 DOCKER_DEST=/var/lib/docker
@@ -32,8 +32,8 @@ chown -R 1001:1001 ${DOCKER_DEST}/minio/data
 #   ${DOCKER_DEST}/minio/certs/public.crt
 #   ${DOCKER_DEST}/minio/certs/private.key
 
-MINIO_ROOT_USER=<MINIO_ADMIN_USERNAME>
-MINIO_ROOT_PASSWORD=<MINIO_ADMIN_USER_PASSWORD>
+MINIO_ROOT_USER=admin        <-- Just an example
+MINIO_ROOT_PASSWORD=welcome1 <-- Just an example
 
 docker run -d \
     --name minio \
@@ -41,8 +41,8 @@ docker run -d \
     -p 9001:9001 \
     -v ${DOCKER_DEST}/minio/data:/data \
     -v ${DOCKER_DEST}/minio/certs:/etc/minio/certs \
-    -e "MINIO_ROOT_USER=${MINIO_ROOT_USER}$ \
-    -e "MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}$ \
+    -e "MINIO_ROOT_USER=${MINIO_ROOT_USER} \
+    -e "MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD} \
     quay.io/minio/minio server /data --address ":9000" --console-address ":9001" --certs-dir /etc/minio/certs
 ```
 
@@ -97,7 +97,9 @@ docker exec -it minio mc admin info local
 Create the bucket to hold the backup files:
 
 ```shell
-docker exec -it minio mc mb local/oracle-backups
+MINIO_BUCKET=oracle-backups
+
+docker exec -it minio mc mb local/${MINIO_BUCKET}
 
     [root@docker-host ~]# docker exec -it minio mc mb local/oracle-backups
     Bucket created successfully `local/oracle-backups`.
@@ -112,3 +114,42 @@ docker exec -it minio mc anonymous set public local/oracle-backups
     [root@docker-host ~]#
 ```
 
+## Oracle RMAN configuration
+
+Depending on the Oracle version and platform, the Oracle MML library may already be available in your installation at ${ORACLE_HOME}/lib/libosbws.so. In this case, you do not need to download it; simply omit the -libDir option when running osbws_install.jar.
+
+```shell
+ORACLE_DB_NAME=orcl         <-- Just an example
+ORACLE_BASE=/u01/app/oracle <-- Just an example
+
+OSBWS_LIB_LOCATION=/tmp/osbws_install.jar
+OSBWS_RMAN_CONFIG=${ORACLE_BASE}/admin/${ORACLE_DB_NAME}/osb/osbws${ORACLE_DB_NAME}.ora
+OSBWS_WALLET_DIR=${ORACLE_BASE}/admin/${ORACLE_DB_NAME}/osb/wallet
+
+java -jar ${OSBWS_LIB_LOCATION} \
+  -awsEndPoint minio.lan.example.com \
+  -awsPort 9000 \
+  -configFile ${OSBWS_RMAN_CONFIG} \
+  -AWSID ${MINIO_ROOT_USER} \
+  -AWSKey ${MINIO_ROOT_PASSWORD} \
+  -location ${MINIO_BUCKET} \
+  -walletDir ${OSBWS_WALLET_DIR} \
+  -useSigV2 -useHttps
+
+    [oracle@acst:~] $ java -jar /tmp/osbws_install.jar \
+      -awsEndPoint minio.lan.example.com \
+      -awsPort 9000 \
+      -configFile /u01/app/oracle/admin/orcl/osb/osbwsorcl.ora \
+      -AWSID admin \
+      -AWSKey welcome1 \
+      -location local/oracle-backups \
+      -walletDir /u01/app/oracle/admin/orcl/osb/wallet \
+      -useSigV2 \
+      -useHttps
+    Oracle Secure Backup Web Service Install Tool, build 12.2.0.1.0DBBKPCSBP_2018-06-12
+    AWS credentials are valid.
+    Oracle Secure Backup Web Service wallet created in directory /u01/app/oracle/admin/orcl/osb/wallet.
+    Oracle Secure Backup Web Service initialization file /u01/app/oracle/admin/orcl/osb/osbwsorcl.ora created.
+    Skipping library download because option -libDir is not specified.
+    [oracle@acst:~] $
+```
