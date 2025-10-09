@@ -7,11 +7,11 @@ This repository contains scripts and configuration files for automating Oracle R
 
 [Oracle Recovery Manager (RMAN)](https://www.oracle.com/br/database/technologies/high-availability/rman.html)
 
-[docs.min.io](https://docs.min.io/enterprise/aistor-object-store/)  [blog.min.io](https://blog.min.io/)
+[MinIO docs](https://docs.min.io/enterprise/aistor-object-store/)  [MinIO blog](https://blog.min.io/)
 
 [Deploy AIStor as a Container](https://docs.min.io/enterprise/aistor-object-store/installation/container/install/)
 
-[Let's Encrypt](https://letsencrypt.org/)
+[Let's Encrypt TLS Certificates](https://letsencrypt.org/)
 
 Create a certificate with Let's Encrypt for your MinIO installation. Example: minio.lan.example.com
 
