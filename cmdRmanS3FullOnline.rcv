@@ -11,8 +11,8 @@ $ORACLE_HOME/bin/rman <<EOF >/dev/null 2>&1
 
         spool log to '${RMAN_LOGFILE}' append ;
 
-        connect target sys/<password>
-        connect catalog $CATALOG_USER/$CATALOG_PASS@$CATALOG_TNS
+        connect target ${ORACLE_SYSDBA_USER}/${ORACLE_SYSDBA_PASS}
+        connect catalog ${CATALOG_USER}/${CATALOG_PASS}@${CATALOG_TNS}
 
         set echo on;
 
@@ -67,7 +67,7 @@ $ORACLE_HOME/bin/rman <<EOF >/dev/null 2>&1
 
         spool log to '${RMAN_LOGFILE}' append ;
 
-        connect target sys/<password>
+        connect target ${ORACLE_SYSDBA_USER}/${ORACLE_SYSDBA_PASS}
         connect catalog $CATALOG_USER_BKP/$CATALOG_PASS_BKP@$CATALOG_TNS_BKP
 
         set echo on;
