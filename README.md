@@ -153,7 +153,7 @@ java -jar ${OSBWS_LIB_LOCATION} \
     [oracle@acst:~] $
 ```
 
-The file "osbws${ORACLE_DB_NAME}.ora" should look like:
+The contents of the file ${OSBWS_RMAN_CONFIG} should be as follows:
 
 ```shell
 OSB_WS_HOST=https://minio.lan.example.com:9000
@@ -162,4 +162,69 @@ OSB_WS_BUCKET=oracle-backups
 OSB_WS_VIRTUAL_HOST=FALSE
 _OSB_WS_AUTH_SCHEME=AWS
 OSB_WS_WALLET='location=file:/u01/app/oracle/admin/orcl/osb/wallet CREDENTIAL_ALIAS=minio_aws'
+```
+
+## Oracle RMAN Backup execution
+
+The script below is just an example. The only difference in your script should be the channel allocation, which can be configured in various ways (for example, by using "CONFIGURE CHANNEL...").
+
+```sql
+rman target / nocatalog
+
+    RUN
+    {
+        allocate channel osb_01 
+            device type sbt 
+            parms='SBT_LIBRARY=/u01/app/oracle/product/19/db_1/lib/libosbws.so,SBT_PARMS=(OSB_WS_PFILE=/u01/app/oracle/admin/orcl/osb/osbwsorcl.ora)';
+
+        backup tablespace SYSTEM;
+
+        release channel osb_01;
+    }
+```
+
+You should see output similar to:
+
+```shell
+    RMAN> RUN
+    2>     {
+            allocate channel osb_01
+                device type sbt
+                parms='SBT_LIBRARY=/u01/app/oracle/product/19/db_1/lib/libosbws.so,SBT_PARMS=(OSB_WS_PFILE=/u01/app/oracle/admin/orcl/osb/osbwsorcl.ora)';
+
+            backup tablespac e SYSTEM;
+
+            release channel osb_01;
+        }
+    {
+    3>         allocate channel osb_01
+    4>             device type sbt
+    5>             parms='SBT_LIBRARY=/u01/app/oracle/product/19/db_1/lib/libosbws.so,SBT_PARMS=(OSB_WS_PFILE=/u01/app/oracle/admin/orcl/osb/osbwsorcl.ora)';
+    6>
+    7>         backup tablespace SYSTEM;
+    8>
+    9>         release channel osb_01;
+    10>     }
+    allocated channel: osb_01
+    channel osb_01: SID=24 device type=SBT_TAPE
+    channel osb_01: Oracle Secure Backup Web Services Library VER=19.0.0.1
+
+    Starting backup at 09/10/2025 19:22
+    channel osb_01: starting full datafile backup set
+    channel osb_01: specifying datafile(s) in backup set
+    input datafile file number=00001 name=/u01/app/oracle/oradata/orcl/datafile/o1_mf_system_lw74lfg6_.dbf
+    channel osb_01: starting piece 1 at 09/10/2025 19:22
+    channel osb_01: finished piece 1 at 09/10/2025 19:23
+    piece handle=qf45qvn1_23375_1_1 tag=TAG20251009T192252 comment=API Version 2.0,MMS Version 19.0.0.1
+    channel osb_01: backup set complete, elapsed time: 00:00:35
+    Finished backup at 09/10/2025 19:23
+
+    Starting Control File and SPFILE Autobackup at 09/10/2025 19:23
+    piece handle=orcl_cfile_auto_c-1269851242-20251009-0e comment=API Version 2.0,MMS Version 19.0.0.1
+    Finished Control File and SPFILE Autobackup at 09/10/2025 19:23
+
+    released channel: osb_01
+
+
+    RMAN>
 ```
