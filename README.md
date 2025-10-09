@@ -5,6 +5,8 @@ Oracle RMAN integration with MinIO S3-compatible storage via Oracle Secure Backu
 
 This repository contains scripts and configuration files for automating Oracle RMAN backups to S3-compatible storage using MinIO. It includes shell scripts, RMAN command files, and environment configuration for secure, efficient, and flexible backup management.
 
+[Oracle Cloud Free Tier](https://www.oracle.com/cloud/free/)
+
 [Oracle Recovery Manager (RMAN)](https://www.oracle.com/br/database/technologies/high-availability/rman.html)
 
 [MinIO docs](https://docs.min.io/enterprise/aistor-object-store/)  [MinIO blog](https://blog.min.io/)
@@ -13,7 +15,9 @@ This repository contains scripts and configuration files for automating Oracle R
 
 [Let's Encrypt TLS Certificates](https://letsencrypt.org/)
 
-Create a certificate with Let's Encrypt for your MinIO installation. Example: minio.lan.example.com
+Create a certificate with Let's Encrypt for your MinIO installation [How It Works](https://letsencrypt.org/how-it-works/). Example: minio.lan.example.com.
+
+Create the docker MinIO container:
 
 ```shell
 DOCKER_DEST=/var/lib/docker
