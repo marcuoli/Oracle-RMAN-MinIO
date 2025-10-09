@@ -105,7 +105,7 @@ docker exec -it minio mc mb local/${MINIO_BUCKET}
     [root@docker-host ~]#
 ```
 
-Relaxed permissions for testing purposes:
+Permissions are relaxed for testing purposes:
 
 ```shell
 docker exec -it minio mc anonymous set public local/oracle-backups
