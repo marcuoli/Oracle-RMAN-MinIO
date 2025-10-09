@@ -13,7 +13,7 @@ This repository contains scripts and configuration files for automating Oracle R
 
 [Let's Encrypt](https://letsencrypt.org/)
 
-Create a certificate with Let's Encrypt for you MinIO installation. Eg: minio.lan.example.com
+Create a certificate with Let's Encrypt for your MinIO installation. Example: minio.lan.example.com
 
 ```shell
 DOCKER_DEST=/var/lib/docker
@@ -21,12 +21,15 @@ DOCKER_DEST=/var/lib/docker
 mkdir -p ${DOCKER_DEST}/minio/data ${DOCKER_DEST}/minio/certs
 chown -R 1001:1001 ${DOCKER_DEST}/minio/data
 
-# Copy and rename the certificate files to the certs directory
-# fullchain.pem -> public.crt
-# privkey.pem -> private.key
-# 
-# ${DOCKER_DEST}/minio/certs/public.crt
-# ${DOCKER_DEST}/minio/certs/private.key
+
+# Copy and rename the certificate files to the certs directory:
+#   fullchain.pem → public.crt
+#   privkey.pem   → private.key
+#   ${DOCKER_DEST}/minio/certs/public.crt
+#   ${DOCKER_DEST}/minio/certs/private.key
+
+MINIO_ROOT_USER=<MINIO_ADMIN_USERNAME>
+MINIO_ROOT_PASSWORD=<MINIO_ADMIN_USER_PASSWORD>
 
 docker run -d \
     --name minio \
@@ -34,13 +37,14 @@ docker run -d \
     -p 9001:9001 \
     -v ${DOCKER_DEST}/minio/data:/data \
     -v ${DOCKER_DEST}/minio/certs:/etc/minio/certs \
-    -e "MINIO_ROOT_USER=<MINIO ADMIN USER NAME> \
-    -e "MINIO_ROOT_PASSWORD=<MINIO ADMIN USER PASSWORD> \
+    -e "MINIO_ROOT_USER=${MINIO_ROOT_USER}$ \
+    -e "MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}$ \
     quay.io/minio/minio server /data --address ":9000" --console-address ":9001" --certs-dir /etc/minio/certs
 ```
 
-Expect this output:
-```
+You should see output similar to:
+
+```shell
 [root@docker-host ~]# docker logs -f minio
 INFO: Formatting 1st pool, 1 set(s), 1 drives per set.
 INFO: WARNING: Host local has more than 0 drives of set. A host failure will result in data becoming unavailable.
@@ -53,4 +57,43 @@ API: https://10.0.3.3:9000  https://127.0.0.1:9000
 WebUI: https://10.0.3.3:9001 https://127.0.0.1:9001
 
 Docs: https://docs.min.io
+```
+
+```shell
+docker exec -it minio mc alias set local https://minio.lan.example.com:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}
+
+    [root@docker-host ~]# docker exec -it minio mc alias set local https://minio.lan.example.com:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}
+    Added `local` successfully.
+    [root@docker-host ~]#
+```
+
+Show MinIO information:
+
+```shell
+docker exec -it minio mc admin info local
+
+    [root@docker-host ~]# docker exec -it minio mc admin info local
+    ●  minio.lan.example.com:9000
+       Uptime: 6 minutes
+       Version: 2025-09-07T16:13:09Z
+       Network: 1/1 OK
+       Drives: 1/1 OK
+       Pool: 1
+
+    ┌──────┬────────────────────────┬─────────────────────┬──────────────┐
+    │ Pool │ Drives Usage           │ Erasure stripe size │ Erasure sets │
+    │ 1st  │ 71.0% (total: 9.9 TiB) │ 1                   │ 1            │
+    └──────┴────────────────────────┴─────────────────────┴──────────────┘
+
+    1 drive online, 0 drives offline, EC:0       
+```
+
+Create the bucket to hold the backup files:
+
+```shell
+docker exec -it minio mc mb local/oracle-backups
+
+    [root@docker-host ~]# docker exec -it minio mc mb local/oracle-backups
+    Bucket created successfully `local/oracle-backups`.
+    [root@docker-host ~]#
 ```
