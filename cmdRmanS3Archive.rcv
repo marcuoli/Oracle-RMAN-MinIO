@@ -1,0 +1,117 @@
+#!/bin/bash
+
+#####
+# Versao 2.2
+
+mkdir -p ${ORACLE_BASE}/admin/${ORACLE_DB_NAME}/cfile/
+
+echo ${RMAN_LOGFILE}
+
+$ORACLE_HOME/bin/rman <<EOF >/dev/null 2>&1
+
+        spool log to '${RMAN_LOGFILE}' append ;
+
+        connect target sys/<password>
+        connect catalog $CATALOG_USER/$CATALOG_PASS@$CATALOG_TNS
+
+        set echo on;
+
+        set controlfile autobackup format for device type 'sbt_tape' to '%d_cfile_auto_%F';
+
+        # FS  11gR2+
+        set controlfile autobackup format for device type DISK to '${ORACLE_BASE}/admin/${ORACLE_DB_NAME}/cfile/%d_cfile_auto_%F';
+        set snapshot controlfile name to '${ORACLE_BASE}/admin/${ORACLE_DB_NAME}/cfile/${ORACLE_DB_NAME}_cfile_snapshot.ora';
+
+        # ASM 11gR2+
+        # configure controlfile autobackup format for device type DISK to '+RECO/%d_cfile_auto_%F';
+        # configure snapshot controlfile name to '+RECO/${ORACLE_DB_NAME}_cfile_snapshot.ora';
+
+        configure retention policy to recovery window of ${RMAN_BACKUP_RECOVERY_WINDOW:-62} days ;
+
+        configure default device type to 'SBT_TAPE';
+        configure device type 'SBT_TAPE' parallelism ${RMAN_BACKUP_ARCH_PARALLELISM:-4};
+        configure channel device type 'SBT_TAPE' parms='SBT_LIBRARY=${RMAN_S3_SBT_LIBRARY},SBT_PARMS=(OSB_WS_PFILE=${RMAN_S3_OSB_WS_PFILE})';
+
+        run {
+            set backup copies 2;
+
+            backup force
+                device type sbt
+                duration 12:00
+                minimize time
+                check logical
+                archivelog all
+                maxsetsize 8G
+                filesperset 1024
+                skip inaccessible
+                format '%d_archive_%U_%t'
+                     , '%d_archive_duplex_%U_%t'
+                delete input ;
+
+            backup
+                device type sbt
+                duration 01:00
+                minimize time
+                check logical
+                current controlfile
+                format '%d_cfile_pos_archive_%U_%t'
+                     , '%d_cfile_pos_archive_duplex_%U_%t' ;
+
+            resync catalog ;
+
+        }
+
+EOF
+
+$ORACLE_HOME/bin/rman <<EOF >/dev/null 2>&1
+
+        spool log to '${RMAN_LOGFILE}' append ;
+
+        connect target sys/<password>
+        connect catalog $CATALOG_USER/$CATALOG_PASS@$CATALOG_TNS
+
+        set echo on;
+
+        configure default device type to 'SBT_TAPE';
+        configure device type 'SBT_TAPE' parallelism ${RMAN_BACKUP_ARCH_PARALLELISM:-4};
+        configure channel device type 'SBT_TAPE' parms='SBT_LIBRARY=${RMAN_S3_SBT_LIBRARY},SBT_PARMS=(OSB_WS_PFILE=${RMAN_S3_OSB_WS_PFILE})';
+
+        delete noprompt obsolete;
+        delete noprompt obsolete orphan;
+
+        crosscheck backupset of database;
+        crosscheck backupset of controlfile;
+        crosscheck backupset of archivelog all;
+        crosscheck backup ;
+        crosscheck copy;
+
+        delete noprompt expired backup;
+
+EOF
+
+RMAN_BKP_EXITCOD=$?
+
+$ORACLE_HOME/bin/rman <<EOF >/dev/null 2>&1
+
+        spool log to '${RMAN_LOGFILE}' append ;
+
+        connect target sys/<password>
+        connect catalog $CATALOG_USER_BKP/$CATALOG_PASS_BKP@$CATALOG_TNS_BKP
+
+        set echo on;
+
+        configure default device type to 'SBT_TAPE';
+        configure device type 'SBT_TAPE' parallelism ${RMAN_BACKUP_ARCH_PARALLELISM:-4};
+        configure channel device type 'SBT_TAPE' parms='SBT_LIBRARY=${RMAN_S3_SBT_LIBRARY},SBT_PARMS=(OSB_WS_PFILE=${RMAN_S3_OSB_WS_PFILE})';
+
+        resync catalog;
+
+EOF
+
+RMAN_RSY_EXITCOD=$?
+
+if [ $RMAN_BKP_EXITCOD == 0 -a $RMAN_RSY_EXITCOD == 0 ] ; then RMAN_EXITCOD=0 ; else RMAN_EXITCOD=1 ; fi
+
+echo "SC OUT BKP : "${RMAN_BKP_EXITCOD} >> ${RMAN_LOGFILE}
+echo "SC OUT RSY : "${RMAN_RSY_EXITCOD} >> ${RMAN_LOGFILE}
+echo "OS OUT RCV : "${RMAN_EXITCOD}     >> ${RMAN_LOGFILE}
