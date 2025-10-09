@@ -15,7 +15,7 @@ This repository contains scripts and configuration files for automating Oracle R
 
 [Let's Encrypt TLS Certificates](https://letsencrypt.org/)
 
-Create a certificate with Let's Encrypt for your MinIO installation ([How It Works](https://letsencrypt.org/how-it-works/)). Example: minio.lan.example.com.
+Create a certificate with Let's Encrypt for your MinIO installation ( [How It Works](https://letsencrypt.org/how-it-works/) ). Example: minio.lan.example.com.
 
 Create the docker MinIO container:
 
@@ -103,3 +103,12 @@ docker exec -it minio mc mb local/oracle-backups
     Bucket created successfully `local/oracle-backups`.
     [root@docker-host ~]#
 ```
+
+```shell
+docker exec -it minio mc anonymous set public local/oracle-backups
+
+    [root@docker-host ~]# docker exec -it minio mc anonymous set public minio/oracle-backups
+    Access permission for `minio/oracle-backups` is set to `public`
+    [root@docker-host ~]#
+```
+
