@@ -169,10 +169,7 @@ OSB_WS_WALLET='location=file:/u01/app/oracle/admin/orcl/osb/wallet CREDENTIAL_AL
 The script below is just an example. The only difference in your script should be the channel allocation, which can be configured in various ways (for example, by using "CONFIGURE CHANNEL...").
 
 ```sql
-rman target / nocatalog
-
-    RUN
-    {
+    RUN {
         allocate channel osb_01 
             device type sbt 
             parms='SBT_LIBRARY=/u01/app/oracle/product/19/db_1/lib/libosbws.so,SBT_PARMS=(OSB_WS_PFILE=/u01/app/oracle/admin/orcl/osb/osbwsorcl.ora)';
@@ -186,8 +183,7 @@ rman target / nocatalog
 You should see output similar to:
 
 ```shell
-    RMAN> RUN
-    2>     {
+    RMAN> RUN {
             allocate channel osb_01
                 device type sbt
                 parms='SBT_LIBRARY=/u01/app/oracle/product/19/db_1/lib/libosbws.so,SBT_PARMS=(OSB_WS_PFILE=/u01/app/oracle/admin/orcl/osb/osbwsorcl.ora)';
