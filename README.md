@@ -16,7 +16,7 @@ This repository contains scripts and configuration files for automating Oracle R
 Create a certificate with Let's Encrypt for you MinIO installation. Eg: minio.lan.example.com
 
 ```shell
-DOCKER_DEST=${DOCKER_DEST}
+DOCKER_DEST=/var/lib/docker
 
 mkdir -p ${DOCKER_DEST}/minio/data ${DOCKER_DEST}/minio/certs
 chown -R 1001:1001 ${DOCKER_DEST}/minio/data
@@ -29,12 +29,12 @@ chown -R 1001:1001 ${DOCKER_DEST}/minio/data
 # ${DOCKER_DEST}/minio/certs/private.key
 
 docker run -d \
+    --name minio \
     -p 9000:9000 \
     -p 9001:9001 \
-    --name minio \
     -v ${DOCKER_DEST}/minio/data:/data \
     -v ${DOCKER_DEST}/minio/certs:/etc/minio/certs \
-    -e "MINIO_ROOT_USER=<span style=\"color:black;\">&lt;ADMIN USER NAME&gt;</span>" \
-    -e "MINIO_ROOT_PASSWORD=<span style=\"color:red;\"><b><em>ADMIN PASSWORD</em></b></span>" \
+    -e "MINIO_ROOT_USER=<MINIO ADMIN USER NAME> \
+    -e "MINIO_ROOT_PASSWORD=<MINIO ADMIN USER PASSWORD> \
     quay.io/minio/minio server /data --address ":9000" --console-address ":9001" --certs-dir /etc/minio/certs
 ```
