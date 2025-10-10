@@ -1,7 +1,7 @@
 #! /bin/bash
 
 #####
-# Versao 2.2
+# Version 2.2
 
 #####
 # Script for executing jobs via root

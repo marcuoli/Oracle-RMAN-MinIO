@@ -17,6 +17,8 @@ This repository contains scripts and configuration files for automating Oracle R
 
 Create a certificate with Let's Encrypt for your MinIO installation ( [How It Works](https://letsencrypt.org/how-it-works/) ). Example: minio.lan.example.com.
 
+Refer to the repository [Oracle-ENV-Scripts](https://github.com/marcuoli/Oracle-ENV-Scripts) for the Oracle environment scripts.
+
 ## MinIO docker container setup
 
 ```shell

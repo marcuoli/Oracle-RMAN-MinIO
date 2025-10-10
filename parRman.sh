@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #####
-# Versao 2.2
+# Version 2.2
 
 source /u01/scripts/oraenv_19_oracle_db_1.sh </dev/null
 
