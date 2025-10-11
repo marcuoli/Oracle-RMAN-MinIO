@@ -228,3 +228,28 @@ You should see output similar to:
 
     RMAN>
 ```
+
+## ATTENTION !!! ##
+
+If you use Java versions later than 1.8, you may encounter the error below. Java versions tested and confirmed to fail are "17.0.16" and "11.0.28". Version "1.8.0_441" is known to work.
+
+```shell
+Oracle Secure Backup Web Service Install Tool, build 12.2.0.1.0DBBKPCSBP_2018-06-12
+AWS credentials are valid.
+Exception in thread "main" oracle.security.crypto.asn1.ASN1FormatException: Length is too big: takes 109 bytes
+        at oracle.security.crypto.asn1.ASN1Header.b(Unknown Source)
+        at oracle.security.crypto.asn1.ASN1Header.input(Unknown Source)
+        at oracle.security.crypto.asn1.ASN1Header.<init>(Unknown Source)
+        at oracle.security.crypto.asn1.ASN1ConstructedInputStream.<init>(Unknown Source)
+        at oracle.security.crypto.asn1.ASN1SequenceInputStream.<init>(Unknown Source)
+        at oracle.security.crypto.cert.PKCS12.input(PKCS12.java:153)
+        at oracle.security.crypto.cert.PKCS12.<init>(PKCS12.java:122)
+        at oracle.security.pki.OracleKeyStoreSpi.load(Unknown Source)
+        at oracle.security.pki.OracleKeyStoreSpi.engineLoad(Unknown Source)
+        at java.base/java.security.KeyStore.load(KeyStore.java:1479)
+        at oracle.backup.util.CreateWallet.createKeyStore(CreateWallet.java:182)
+        at oracle.backup.util.CreateWallet.createWallet(CreateWallet.java:153)
+        at oracle.backup.s3.install.S3Config.createWallet(S3Config.java:535)
+        at oracle.backup.s3.install.S3Config.doConfig(S3Config.java:234)
+        at oracle.backup.s3.install.S3Config.main(S3Config.java:212)
+```
