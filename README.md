@@ -27,7 +27,13 @@ DOCKER_DEST=/var/lib/docker
 mkdir -p ${DOCKER_DEST}/minio/data ${DOCKER_DEST}/minio/certs
 chown -R 1001:1001 ${DOCKER_DEST}/minio/data
 
-# Copy and rename the Let's Encrypt certificate files to the certs directory:
+# Self signed
+#   https://github.com/minio/certgen
+#   cd ${DOCKER_DEST}/minio/certs
+#   ./certgen-linux-amd64 -host "127.0.0.1,localhost,minio.lan.example.com.br,10.0.3.3"
+
+# Let's Encrypt
+#   Copy and rename the Let's Encrypt certificate files to the certs directory:
 #   fullchain.pem → public.crt
 #   privkey.pem   → private.key
 #   ${DOCKER_DEST}/minio/certs/public.crt
