@@ -167,8 +167,8 @@ The contents of the file ${OSBWS_RMAN_CONFIG} should be as follows:
 
 ```shell
 OSB_WS_HOST=https://minio.lan.example.com:9000
-OSB_WS_BUCKET=oracle-backups
-# OSB_WS_LOCATION=on-prem
+OSB_WS_BUCKET=oracle-backups    # This is very important
+# OSB_WS_LOCATION=on-prem       # This is very important
 OSB_WS_VIRTUAL_HOST=FALSE
 _OSB_WS_AUTH_SCHEME=AWS
 OSB_WS_WALLET='location=file:/u01/app/oracle/admin/orcl/osb/wallet CREDENTIAL_ALIAS=minio_aws'
